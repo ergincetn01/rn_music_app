@@ -1,74 +1,101 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { StatusBar } from "expo-status-bar"
+import "../../global.css"
+import { View, Text, TextInput, FlatList, Alert } from "react-native"
+import FullScreenWrapper from "@/components/wrapper/fullscreenwrapper"
+import KeyboardAvoidingScrollView from "@/components/keyboardavoidingview"
+import { useContext, useMemo, useState } from "react"
+import Entypo from "@expo/vector-icons/Entypo"
+import RenderSong from "@/components/song/SongCard"
+import { songsData } from "@/constants/songData"
+import { SongItem } from "@/model/song/songTypes"
+import { handleLongPress, handlePress } from "@/utils/songUtils"
+import { SongContext } from "@/context/songContext"
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+export default function AllSongs() {
+	const [searchTerm, setSearchTerm] = useState<string>("")
+	const { addFavorite, isFavorite, removeFavorite } = useContext(SongContext)
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+	const handleFavoritePress = (song: SongItem) => {
+		if (isFavorite(song)) {
+			removeFavorite(song)
+		} else {
+			addFavorite(song)
+		}
+	}
+
+	const filteredSongs = useMemo(
+		() =>
+			songsData.filter((item) =>
+				item.title.toLowerCase().includes(searchTerm.toLowerCase())
+			),
+		[songsData, searchTerm]
+	)
+
+	const resetSearch = () => {
+		setSearchTerm("")
+	}
+
+	return (
+		<FullScreenWrapper>
+			<KeyboardAvoidingScrollView
+				showsVerticalScrollIndicator={false}
+				contentContainerStyle={{ flexGrow: 1 }}
+				scrollEnabled={false}
+			>
+				<View className="px-6 pt-10">
+					<Text className="text-white text-3xl">All Songs</Text>
+					<View
+						style={{
+							borderRadius: 12,
+							borderWidth: 1,
+							borderColor: "#484848",
+							marginTop: 12,
+							flexDirection: "row",
+							alignItems: "center",
+							justifyContent: "space-between",
+							paddingVertical: 2,
+							paddingHorizontal: 8,
+						}}
+					>
+						<TextInput
+							value={searchTerm}
+							onChangeText={(text) => setSearchTerm(text)}
+							autoCapitalize="none"
+							autoCorrect={false}
+							style={{ color: "#fff" }}
+							placeholder="Search"
+							numberOfLines={1}
+							className="w-80"
+							placeholderTextColor={"white"}
+						/>
+						{searchTerm.length > 0 ? (
+							<Entypo
+								onPress={resetSearch}
+								name="cross"
+								size={24}
+								color="white"
+							/>
+						) : (
+							<></>
+						)}
+					</View>
+					<FlatList
+						contentContainerStyle={{ rowGap: 8, marginTop: 20 }}
+						renderItem={({ item }) => (
+							<RenderSong
+								onFavoritePress={() =>
+									handleFavoritePress(item)
+								}
+								item={item}
+								onLongPress={() => handleLongPress(item)}
+							/>
+						)}
+						keyExtractor={(item) => item.id.toString()}
+						data={filteredSongs}
+					/>
+				</View>
+			</KeyboardAvoidingScrollView>
+			<StatusBar style="light" />
+		</FullScreenWrapper>
+	)
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
