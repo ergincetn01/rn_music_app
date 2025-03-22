@@ -1,19 +1,58 @@
-import { Tabs } from "expo-router"
-import React from "react"
 import { Colors } from "@/constants/Colors"
-import { Entypo, Feather } from "@expo/vector-icons"
-import { LinearGradient } from "expo-linear-gradient"
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { useFloatingViewStore } from "@/store/floatingTrackViewStore"
 import { useSongStore } from "@/store/songStore"
+import { Entypo, Feather } from "@expo/vector-icons"
+import { LinearGradient } from "expo-linear-gradient"
+import { Tabs } from "expo-router"
+import { StatusBar } from "expo-status-bar"
+import React from "react"
+import {
+	Pressable,
+	Text,
+	View,
+	StyleSheet,
+	Dimensions,
+	TouchableOpacity,
+	SafeAreaView,
+} from "react-native"
+import Animated, {
+	useSharedValue,
+	useAnimatedStyle,
+	withTiming,
+} from "react-native-reanimated"
 
-export default function TabLayout() {
+const { width, height } = Dimensions.get("screen")
+
+const ExpandableFullScreenView = () => {
 	const { isVisible, hide } = useFloatingViewStore()
 
 	const { currentSong } = useSongStore()
 
+	const isExpanded = useSharedValue(0)
+
+	const expand = () => {
+		isExpanded.value = withTiming(1, { duration: 300 })
+	}
+
+	const shrink = () => {
+		isExpanded.value = withTiming(0, { duration: 300 })
+	}
+
+	const animatedStyle = useAnimatedStyle(() => ({
+		transform: [
+			{
+				translateY:
+					isExpanded.value === 1
+						? withTiming(0, { duration: 600 })
+						: withTiming(height, { duration: 600 }),
+			},
+		],
+		pointerEvents: isExpanded.value > 0 ? "auto" : "none",
+	}))
+
 	return (
-		<View style={{ flex: 1 }}>
+		<SafeAreaView style={styles.container}>
+			<StatusBar style="light" translucent={true} />
 			<Tabs
 				screenOptions={{
 					tabBarActiveTintColor: Colors.tintColorActive,
@@ -85,25 +124,28 @@ export default function TabLayout() {
 					}}
 				/>
 			</Tabs>
+			<Animated.View style={[styles.animatedOverlay, animatedStyle]}>
+				<Pressable onPress={shrink} style={styles.shrinkButton}>
+					<Text>Shrink</Text>
+				</Pressable>
+			</Animated.View>
 			{isVisible && (
-				<View style={styles.floatingView}>
+				<Pressable onPress={expand} style={styles.floatingView}>
 					<Text style={styles.text}>{currentSong?.title}</Text>
-					<TouchableOpacity onPress={hide} style={styles.closeButton}>
-						<Text style={styles.closeText}>X</Text>
-					</TouchableOpacity>
-				</View>
+				</Pressable>
 			)}
-		</View>
+		</SafeAreaView>
 	)
 }
 
 const styles = StyleSheet.create({
+	container: { flex: 1 },
 	floatingView: {
 		position: "absolute",
 		bottom: 68,
 		left: 6,
 		right: 6,
-		backgroundColor: "rgba(0,0,0,0.8)",
+		backgroundColor: Colors.darkgrey,
 		padding: 15,
 		borderRadius: 10,
 		alignItems: "center",
@@ -121,4 +163,26 @@ const styles = StyleSheet.create({
 		color: "#fff",
 		fontSize: 18,
 	},
+	animatedOverlay: {
+		position: "absolute",
+		top: 0,
+		bottom: 0,
+		left: 0,
+		right: 0,
+		backgroundColor: Colors.darkgrey,
+		alignItems: "center",
+		justifyContent: "center",
+		zIndex: 9999,
+	},
+	shrinkButton: { padding: 10, backgroundColor: "red", borderRadius: 5 },
+	tabBarStyle: {
+		position: "absolute",
+		bottom: 0,
+		width: "100%",
+		height: 60,
+		backgroundColor: "rgba(0, 0, 0, 0.8)",
+		borderRadius: 16,
+	},
 })
+
+export default ExpandableFullScreenView
