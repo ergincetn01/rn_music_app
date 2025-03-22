@@ -4,12 +4,12 @@ import FullScreenWrapper from "@/components/wrapper/fullscreenwrapper"
 import RenderSong from "@/components/song/SongCard"
 import KeyboardAvoidingScrollView from "@/components/keyboardavoidingview"
 import { handleLongPress, handlePress } from "@/utils/songUtils"
-import { SongContext } from "@/context/songContext"
 import { SongItem } from "@/model/song/songTypes"
+import { useSongStore } from "@/store/songStore"
 
 const Favorites = () => {
 	const { addFavorite, favorites, isFavorite, removeFavorite } =
-		useContext(SongContext)
+		useSongStore()
 
 	const handleFavoritePress = (song: SongItem) => {
 		if (isFavorite(song)) {
@@ -18,6 +18,7 @@ const Favorites = () => {
 			addFavorite(song)
 		}
 	}
+
 	return (
 		<FullScreenWrapper>
 			<KeyboardAvoidingScrollView

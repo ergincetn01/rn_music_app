@@ -9,11 +9,18 @@ import RenderSong from "@/components/song/SongCard"
 import { songsData } from "@/constants/songData"
 import { SongItem } from "@/model/song/songTypes"
 import { handleLongPress, handlePress } from "@/utils/songUtils"
-import { SongContext } from "@/context/songContext"
+import { useSongStore } from "@/store/songStore"
+import { useFloatingViewStore } from "@/store/floatingTrackViewStore"
 
 export default function AllSongs() {
 	const [searchTerm, setSearchTerm] = useState<string>("")
-	const { addFavorite, isFavorite, removeFavorite } = useContext(SongContext)
+	const { addFavorite, isFavorite, removeFavorite, setCurrentSong } =
+		useSongStore()
+
+	const show = useFloatingViewStore((state) => state.show)
+
+	const isVisible = useFloatingViewStore((state) => state.isVisible)
+	console.log("Floating View Visibility:", isVisible)
 
 	const handleFavoritePress = (song: SongItem) => {
 		if (isFavorite(song)) {
@@ -33,6 +40,10 @@ export default function AllSongs() {
 
 	const resetSearch = () => {
 		setSearchTerm("")
+	}
+
+	const handleCurrentSong = (song: SongItem) => {
+		setCurrentSong(song)
 	}
 
 	return (
@@ -83,9 +94,13 @@ export default function AllSongs() {
 						contentContainerStyle={{ rowGap: 8, marginTop: 20 }}
 						renderItem={({ item }) => (
 							<RenderSong
-								onFavoritePress={() =>
+								onFavoritePress={() => {
 									handleFavoritePress(item)
-								}
+								}}
+								onPress={() => {
+									handleCurrentSong(item)
+									show()
+								}}
 								item={item}
 								onLongPress={() => handleLongPress(item)}
 							/>
@@ -95,6 +110,7 @@ export default function AllSongs() {
 					/>
 				</View>
 			</KeyboardAvoidingScrollView>
+
 			<StatusBar style="light" />
 		</FullScreenWrapper>
 	)

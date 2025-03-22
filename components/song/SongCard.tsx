@@ -1,6 +1,7 @@
 import { Colors } from "@/constants/Colors"
-import { SongContext } from "@/context/songContext"
+// import { SongContext } from "@/context/songContext"
 import { SongItem } from "@/model/song/songTypes"
+import { useSongStore } from "@/store/songStore"
 import { Entypo } from "@expo/vector-icons"
 import { FC, useContext } from "react"
 import {
@@ -22,12 +23,12 @@ const RenderSong: FC<RenderSongProps> = ({
 	onFavoritePress,
 	...pressableProps
 }) => {
-	const { isFavorite } = useContext(SongContext)
+	const { isFavorite } = useSongStore()
 	const durationMins = Math.floor(item.duration / 60).toString()
 	const durationSecs = (item.duration % 60).toString().padStart(2, "0")
 
 	return (
-		<Pressable style={styles.songitem}>
+		<Pressable {...pressableProps} style={styles.songitem}>
 			<View
 				style={{
 					flexDirection: "row",
