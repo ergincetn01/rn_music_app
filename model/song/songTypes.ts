@@ -3,6 +3,7 @@ export type SongItem = {
 	title: string
 	artist: string
 	duration: number
+	img: string
 }
 export interface SongStoreType {
 	currentSong: SongItem | null
