@@ -1,9 +1,10 @@
 import { Colors } from "@/constants/Colors"
+import songImages from "@/constants/songImages"
 // import { SongContext } from "@/context/songContext"
 import { SongItem } from "@/model/song/songTypes"
 import { useSongStore } from "@/store/songStore"
 import { Entypo } from "@expo/vector-icons"
-import { FC, useContext } from "react"
+import { FC, useContext, useState } from "react"
 import {
 	Image,
 	Pressable,
@@ -27,8 +28,23 @@ const RenderSong: FC<RenderSongProps> = ({
 	const durationMins = Math.floor(item.duration / 60).toString()
 	const durationSecs = (item.duration % 60).toString().padStart(2, "0")
 
+	const [isPressed, setIsPressed] = useState(false)
+
 	return (
-		<Pressable {...pressableProps} style={styles.songitem}>
+		<Pressable
+			onPressIn={() => setIsPressed(true)}
+			onPressOut={() => setIsPressed(false)}
+			{...pressableProps}
+			style={[
+				styles.songitem,
+				{
+					backgroundColor: isPressed
+						? Colors.coolgrey
+						: "transparent",
+					opacity: isPressed ? 0.4 : 1,
+				},
+			]}
+		>
 			<View
 				style={{
 					flexDirection: "row",
@@ -36,7 +52,7 @@ const RenderSong: FC<RenderSongProps> = ({
 				}}
 			>
 				<Image
-					source={require("@/assets/images/songs/toygar.jpg")}
+					source={songImages[item.id - 1]}
 					resizeMode="cover"
 					style={{
 						width: 50,
