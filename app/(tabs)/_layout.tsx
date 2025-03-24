@@ -1,4 +1,7 @@
+import CurrentTrackCard from "@/components/song/CurrentTrackCard"
+import FloatingTrackView from "@/components/song/FloatingPlayer"
 import { Colors } from "@/constants/Colors"
+import songsImages from "@/constants/songImages"
 import { useFloatingViewStore } from "@/store/floatingTrackViewStore"
 import { useSongStore } from "@/store/songStore"
 import { Entypo, Feather } from "@expo/vector-icons"
@@ -14,17 +17,17 @@ import {
 	Dimensions,
 	TouchableOpacity,
 	SafeAreaView,
+	Image,
 } from "react-native"
 import Animated, {
 	useSharedValue,
 	useAnimatedStyle,
 	withTiming,
 } from "react-native-reanimated"
-
 const { width, height } = Dimensions.get("screen")
 
-const ExpandableFullScreenView = () => {
-	const { isVisible, hide } = useFloatingViewStore()
+const TabsLayout = () => {
+	const { isVisible, hide, show } = useFloatingViewStore()
 
 	const { currentSong } = useSongStore()
 
@@ -43,12 +46,33 @@ const ExpandableFullScreenView = () => {
 			{
 				translateY:
 					isExpanded.value === 1
-						? withTiming(0, { duration: 600 })
-						: withTiming(height, { duration: 600 }),
+						? withTiming(0, { duration: 400 })
+						: withTiming(height, { duration: 400 }),
 			},
 		],
 		pointerEvents: isExpanded.value > 0 ? "auto" : "none",
 	}))
+
+	// const animatedImageStyle = useAnimatedStyle(() => ({
+	// 	opacity: 1,
+	// 	height:
+	// 		isExpanded.value === 1
+	// 			? withTiming(200, { duration: 300 })
+	// 			: withTiming(10, { duration: 300 }),
+	// 	width:
+	// 		isExpanded.value === 1
+	// 			? withTiming(200, { duration: 300 })
+	// 			: withTiming(10, { duration: 300 }),
+
+	// 	transform: [
+	// 		{
+	// 			scale:
+	// 				isExpanded.value === 1
+	// 					? withTiming(1, { duration: 300 })
+	// 					: withTiming(0, { duration: 300 }),
+	// 		},
+	// 	],
+	// }))
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -124,16 +148,15 @@ const ExpandableFullScreenView = () => {
 					}}
 				/>
 			</Tabs>
-			<Animated.View style={[styles.animatedOverlay, animatedStyle]}>
-				<Pressable onPress={shrink} style={styles.shrinkButton}>
-					<Text>Shrink</Text>
-				</Pressable>
-			</Animated.View>
-			{isVisible && (
-				<Pressable onPress={expand} style={styles.floatingView}>
+			<FloatingTrackView />
+			{/* {currentSong ? (
+				<Pressable onPress={show} style={styles.floatingView}>
 					<Text style={styles.text}>{currentSong?.title}</Text>
 				</Pressable>
-			)}
+			) : (
+				<></>
+			)} */}
+			<CurrentTrackCard />
 		</SafeAreaView>
 	)
 }
@@ -171,10 +194,13 @@ const styles = StyleSheet.create({
 		right: 0,
 		backgroundColor: Colors.darkgrey,
 		alignItems: "center",
-		justifyContent: "center",
+		paddingTop: 32,
 		zIndex: 9999,
 	},
-	shrinkButton: { padding: 10, backgroundColor: "red", borderRadius: 5 },
+	shrinkButton: {
+		padding: 10,
+		borderRadius: 5,
+	},
 	tabBarStyle: {
 		position: "absolute",
 		bottom: 0,
@@ -185,4 +211,4 @@ const styles = StyleSheet.create({
 	},
 })
 
-export default ExpandableFullScreenView
+export default TabsLayout
